@@ -374,7 +374,7 @@ class SumDataset(data.Dataset):
                 # else:
                 #     linetypes.append(1)
                 linetypes.append(x['modification'][i])
-                mus.append(x['churn'][i]) ######################## eita new add kortesi ami.
+                # mus.append(x['churn'][i]) ######################## eita new add kortesi ami.
             '''for i in range(len(x['mutation'])):
                 if x['mutation'][i] not in self.Nl_Voc:
                     self.Nl_Voc[x['mutation'][i]] = len(self.Nl_Voc)
