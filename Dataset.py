@@ -463,7 +463,7 @@ class SumDataset(data.Dataset):
             overlap = self.getoverlap(texta, textb)
             
             print('----------------')
-            mus = self.normalize_list(mus)
+            # mus = self.normalize_list(mus)
             linetypes = self.normalize_list(linetypes)
             #mus = [1 if i != 0 else 0 for i in mus]
             #mus = self.transform_list(mus)
