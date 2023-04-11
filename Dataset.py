@@ -472,7 +472,7 @@ class SumDataset(data.Dataset):
             Nodes.append(self.pad_seq(self.Get_Em(nodes, self.Nl_Voc), self.Nl_Len))
             Types.append(self.pad_seq(types, self.Nl_Len))
             Res.append(self.pad_seq(res, self.Nl_Len))
-            LineMus.append(self.pad_seq(mus, self.Code_Len)) ############# eida use kormu
+            LineMus.append(self.pad_list(mus, self.Code_Len, 3)) ############# eida use kormu
             inputText.append(self.pad_seq(overlap, self.Nl_Len))
             #inputText.append(self.pad_list(text, self.Nl_Len, 10))
             LineNodes.append(self.pad_seq(self.Get_Em(linenodes, self.Nl_Voc), self.Code_Len))
