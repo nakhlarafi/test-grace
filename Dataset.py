@@ -374,7 +374,7 @@ class SumDataset(data.Dataset):
                 # else:
                 #     linetypes.append(1)
                 linetypes.append(x['modification'][i])
-                # mus.append(x['churn'][i]) ######################## eita new add kortesi ami.
+                #mus.append(x['churn'][i]) ######################## eita new add kortesi ami.
             '''for i in range(len(x['mutation'])):
                 if x['mutation'][i] not in self.Nl_Voc:
                     self.Nl_Voc[x['mutation'][i]] = len(self.Nl_Voc)
@@ -463,7 +463,7 @@ class SumDataset(data.Dataset):
             overlap = self.getoverlap(texta, textb)
             
             print('----------------')
-            # mus = self.normalize_list(mus)
+            #mus = self.normalize_list(mus)
             linetypes = self.normalize_list(linetypes)
             #mus = [1 if i != 0 else 0 for i in mus]
             #mus = self.transform_list(mus)
@@ -472,7 +472,7 @@ class SumDataset(data.Dataset):
             Nodes.append(self.pad_seq(self.Get_Em(nodes, self.Nl_Voc), self.Nl_Len))
             Types.append(self.pad_seq(types, self.Nl_Len))
             Res.append(self.pad_seq(res, self.Nl_Len))
-            LineMus.append(self.pad_list(mus, self.Code_Len, 3)) ############# eida use kormu
+            LineMus.append(self.pad_seq(mus, self.Code_Len)) ############# eida use kormu
             inputText.append(self.pad_seq(overlap, self.Nl_Len))
             #inputText.append(self.pad_list(text, self.Nl_Len, 10))
             LineNodes.append(self.pad_seq(self.Get_Em(linenodes, self.Nl_Voc), self.Code_Len))
