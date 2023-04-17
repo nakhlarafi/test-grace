@@ -467,7 +467,7 @@ class SumDataset(data.Dataset):
             linetypes = self.normalize_list(linetypes)
             #mus = [1 if i != 0 else 0 for i in mus]
             #mus = self.transform_list(mus)
-            print(mus)
+            print(linetypes)
             #pdb.set_trace()
             Nodes.append(self.pad_seq(self.Get_Em(nodes, self.Nl_Voc), self.Nl_Len))
             Types.append(self.pad_seq(types, self.Nl_Len))
