@@ -26,7 +26,7 @@ args = dotdict({
     'CodeLen':CodeLen_map[sys.argv[2]],
     'SentenceLen':10,
     'batch_size':60,
-    'embedding_size':32,
+    'embedding_size':64,
     'WoLen':15,
     'Vocsize':100,
     'Nl_Vocsize':100,
