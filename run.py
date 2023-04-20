@@ -35,7 +35,7 @@ args = dotdict({
     'poolsize':50,
     'Code_Vocsize':100,
     'seed':0,
-    'lr':1e-4
+    'lr':1e-3
 })
 os.environ['PYTHONHASHSEED'] = str(args.seed)
 
