@@ -26,7 +26,7 @@ args = dotdict({
     'CodeLen':CodeLen_map[sys.argv[2]],
     'SentenceLen':10,
     'batch_size':60,
-    'embedding_size':64,
+    'embedding_size':128,
     'WoLen':15,
     'Vocsize':100,
     'Nl_Vocsize':100,
@@ -35,7 +35,7 @@ args = dotdict({
     'poolsize':50,
     'Code_Vocsize':100,
     'seed':0,
-    'lr':1e-3
+    'lr':1e-4
 })
 os.environ['PYTHONHASHSEED'] = str(args.seed)
 
