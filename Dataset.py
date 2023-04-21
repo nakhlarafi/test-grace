@@ -371,11 +371,11 @@ class SumDataset(data.Dataset):
                 if x['ltype'][i] not in self.Nl_Voc:
                     self.Nl_Voc[x['ltype'][i]] = len(self.Nl_Voc)
                 linenodes.append(x['ltype'][i])
-                # if i in x['lcorrectnum']:
-                #     linetypes.append(x['lcorrectnum'][i])
-                # else:
-                #     linetypes.append(1)
-                linetypes.append(x['churn'][i])
+                if i in x['lcorrectnum']:
+                    linetypes.append(x['lcorrectnum'][i])
+                else:
+                    linetypes.append(1)
+                mus.append(x['churn'][i])
                 #mus.append(x['churn'][i]) ######################## eita new add kortesi ami.
             '''for i in range(len(x['mutation'])):
                 if x['mutation'][i] not in self.Nl_Voc:
@@ -465,8 +465,8 @@ class SumDataset(data.Dataset):
             overlap = self.getoverlap(texta, textb)
             
             print('----------------')
-            #mus = self.normalize_list(mus)
-            linetypes = self.normalize_list(linetypes)
+            mus = self.normalize_list(mus)
+            # linetypes = self.normalize_list(linetypes)
             #mus = [1 if i != 0 else 0 for i in mus]
             #mus = self.transform_list(mus)
             print(mus)

@@ -55,7 +55,7 @@ class NlEncoder(nn.Module):
         nodeem = torch.cat([nodeem, inputtext.unsqueeze(-1).float()], dim=-1)
         x = nodeem
         # Calculate the padding size
-        padding_size = x.shape[1] - linetype.shape[1]
+        padding_size = x.shape[1] - linemus.shape[1]
 
         # Pad the linemus tensor with zeros along the last dimension
         #padded_linemus = F.pad(linemus, (0, padding_size)).unsqueeze(-1).float()
@@ -64,7 +64,7 @@ class NlEncoder(nn.Module):
         #x = torch.cat([x, padded_linemus], dim=-1)
 
         # Line Type Add
-        padded_linetype = F.pad(linetype, (0, padding_size)).unsqueeze(-1).float()
+        padded_linetype = F.pad(linemus, (0, padding_size)).unsqueeze(-1).float()
         x = torch.cat([x, padded_linetype], dim=-1)
         
         #x = torch.cat([x, linemus.unsqueeze(-1).float()], dim=-1)
