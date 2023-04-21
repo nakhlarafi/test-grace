@@ -375,7 +375,7 @@ class SumDataset(data.Dataset):
                     linetypes.append(x['lcorrectnum'][i])
                 else:
                     linetypes.append(1)
-                mus.append(x['churn'][i])
+                mus.append(x['modification'][i])
                 #mus.append(x['churn'][i]) ######################## eita new add kortesi ami.
             '''for i in range(len(x['mutation'])):
                 if x['mutation'][i] not in self.Nl_Voc:
