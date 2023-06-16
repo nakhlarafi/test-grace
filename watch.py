@@ -64,7 +64,7 @@ for _, i in enumerate(p):
 with open(pr + 'result_final_%d_%s_%s'%(seed,lr, batch_size), 'w') as pp:
     pp.write("lr: %f seed %d batch_size %d\n"%(lr, seed, batch_size))
     pp.write('num: %s\n'%len(p))
-    pp.write('%d: %d\n'%(10, eps[10]))
+    # pp.write('%d: %d\n'%(10, eps[10]))
     pp.write(str(sorted(eps.items(), key=lambda x:x[1])))
 
 print(len(score))
@@ -119,6 +119,7 @@ for idx in p:
 result_path = os.path.join("result-all")
 if not os.path.exists(result_path):
     os.makedirs(result_path)
+
 print('-----------------------------')
 print('top1:',top1)
 print('top3:',top3)
@@ -126,6 +127,7 @@ print('top5:',top5)
 print('mfr:',np.mean(mfr))
 print('mar:',np.mean(mar))
 print('-----------------------------')
+
 with open(result_path + '/' + pr, 'w') as f:
     f.write('top1: %d\n'%top1)
     f.write('top3: %d\n'%top3)

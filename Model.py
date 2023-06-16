@@ -22,7 +22,7 @@ class NlEncoder(nn.Module):
         self.conv = nn.Conv2d(self.embedding_size, self.embedding_size, (1, self.word_len))
         self.transformerBlocks = nn.ModuleList(
             [TransformerBlock(self.embedding_size, 8, self.feed_forward_hidden, 0.1) for _ in range(5)])
-        self.token_embedding = nn.Embedding(args.Nl_Vocsize, self.embedding_size-2)
+        self.token_embedding = nn.Embedding(args.Nl_Vocsize, self.embedding_size-1)
         self.token_embedding1 = nn.Embedding(args.Nl_Vocsize, self.embedding_size)
 
         self.text_embedding = nn.Embedding(20, self.embedding_size)
@@ -35,39 +35,13 @@ class NlEncoder(nn.Module):
         self.lstm = nn.LSTM(self.embedding_size // 2, int(self.embedding_size / 4), batch_first=True, bidirectional=True)
         self.conv = nn.Conv2d(self.embedding_size, self.embedding_size, (1, 10))
         self.resLinear2 = nn.Linear(self.embedding_size, 1)
-    
-    
-    #### Model e linemus handamu, but error khaitesi
     def forward(self, input_node, inputtype, inputad, res, inputtext, linenode, linetype, linemus):
-        print("input_node shape:", input_node.shape)
-        print("inputtype shape:", inputtype.shape)
-        print("inputad shape:", inputad.shape)
-        print("res shape:", res.shape)
-        print("inputtext shape:", inputtext.shape)
-        print("linenode shape:", linenode.shape)
-        print("linetype shape:", linetype.shape)
-        print("linemus shape:", linemus.shape)
         nlmask = torch.gt(input_node, 0)
         resmask = torch.eq(input_node, 2)#torch.gt(res, 0)
         inputad = inputad.float()
         nodeem = self.token_embedding(input_node)
-
         nodeem = torch.cat([nodeem, inputtext.unsqueeze(-1).float()], dim=-1)
         x = nodeem
-        # Calculate the padding size
-        padding_size = x.shape[1] - linemus.shape[1]
-
-        # Pad the linemus tensor with zeros along the last dimension
-        #padded_linemus = F.pad(linemus, (0, padding_size)).unsqueeze(-1).float()
-
-        # Concatenate the tensors
-        #x = torch.cat([x, padded_linemus], dim=-1)
-
-        # Line Type Add
-        padded_linetype = F.pad(linemus, (0, padding_size)).unsqueeze(-1).float()
-        x = torch.cat([x, padded_linetype], dim=-1)
-        
-        #x = torch.cat([x, linemus.unsqueeze(-1).float()], dim=-1)
         lineem = self.token_embedding1(linenode)
         x = torch.cat([x, lineem], dim=1)
         for trans in self.transformerBlocks:
@@ -77,3 +51,8 @@ class NlEncoder(nn.Module):
         loss = -torch.log(resSoftmax.clamp(min=1e-10, max=1)) * res
         loss = loss.sum(dim=-1)
         return loss, resSoftmax, x
+
+       
+
+
+

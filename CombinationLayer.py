@@ -17,4 +17,3 @@ class CombinationLayer(nn.Module):
             tmpsum = dropout(tmpsum)
         return tmpsum
 
-

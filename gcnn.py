@@ -37,4 +37,3 @@ class GCNN(nn.Module):
         if left is not None:
             state = state[:,left.size(1):,:]
         return state#self.dropout(state)[:,50:,:]
-
