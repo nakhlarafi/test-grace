@@ -18,11 +18,11 @@ for i in tqdm(range(int(len(lst) / totalnum) + 1)):
         if totalnum * i + j >= len(lst):
             continue
         cardn =int(j / singlenum)
-        p = subprocess.Popen("CUDA_VISIBLE_DEVICES="+str(card[cardn]) + " python run.py %d %s %f %d %d"%(lst[totalnum * i + j], project, lr, seed, batch_size), shell=True)
+        p = subprocess.Popen("CUDA_VISIBLE_DEVICES="+str(card[cardn]) + " python3 run.py %d %s %f %d %d"%(lst[totalnum * i + j], project, lr, seed, batch_size), shell=True)
         jobs.append(p)
         time.sleep(10)
     for p in jobs:
         p.wait()
-p = subprocess.Popen("python sum.py %s %d %f %d"%(project, seed, lr, batch_size), shell=True)
+p = subprocess.Popen("python3 sum.py %s %d %f %d"%(project, seed, lr, batch_size), shell=True)
 p.wait()
-subprocess.Popen("python watch.py %s %d %f %d"%(project, seed, lr, batch_size),shell=True)            
+subprocess.Popen("python3 watch.py %s %d %f %d"%(project, seed, lr, batch_size),shell=True)            
