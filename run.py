@@ -13,14 +13,17 @@ from nltk.translate.bleu_score import corpus_bleu
 import pandas as pd
 import random
 import sys
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
+
 #import wandb
 #wandb.init(project="codesum")
 class dotdict(dict):
     def __getattr__(self, name):
         return self[name]
 
-NlLen_map = {"Time":3900, "Math":4500, "Lang":280, "Chart": 2350, "Mockito":1780, "unknown":2200}
-CodeLen_map = {"Time":1300, "Math":2700, "Lang":300, "Chart":5250, "Mockito":1176, "unknown":2800}
+NlLen_map = {"Time":3900, "Math":4500, "Lang":280, "Chart": 2350, "Mockito":2000, "unknown":2200, "Cli":1000}
+CodeLen_map = {"Time":1300, "Math":2700, "Lang":300, "Chart":5250, "Mockito":2000, "unknown":2800, "Cli":1000}
 args = dotdict({
     'NlLen':NlLen_map[sys.argv[2]],
     'CodeLen':CodeLen_map[sys.argv[2]],
@@ -38,6 +41,19 @@ args = dotdict({
     'lr':1e-3
 })
 os.environ['PYTHONHASHSEED'] = str(args.seed)
+
+def setup(rank, world_size):
+    "Sets up the process group and configuration for PyTorch Distributed Data Parallelism"
+    os.environ["MASTER_ADDR"] = 'localhost'
+    os.environ["MASTER_PORT"] = "12355"
+
+    # Initialize the process group
+    dist.init_process_group("nccl", rank=rank, world_size=world_size)
+
+def cleanup():
+    "Cleans up the distributed environment"
+    dist.destroy_process_group()
+
 
 def save_model(model, dirs = "checkpointcodeSearch"):
     if not os.path.exists(dirs):
@@ -83,12 +99,23 @@ def train(t = 5, p='Math'):
     args.Code_Vocsize = len(train_set.Code_Voc)
     args.Nl_Vocsize = len(train_set.Nl_Voc)
     args.Vocsize = len(train_set.Char_Voc)
-
     print(dev_set.ids)
+
+    
+    dist.init_process_group("nccl")
+    rank = dist.get_rank()+1
+    print('-------------',rank)
+    print(f"Start running basic DDP example on rank {rank}.")
     model = NlEncoder(args)
+    # create model and move it to GPU with id rank
+    device_id = rank % torch.cuda.device_count()
+
     if use_cuda:
         print('using GPU')
-        model = model.cuda()
+        model = model.cuda(device_id)
+
+    # wrap the model with DDP
+    model = DDP(model, device_ids=[device_id])
     maxl = 1e9
     optimizer = ScheduledOptim(optim.Adam(model.parameters(), lr=args.lr), args.embedding_size, 4000)
     maxAcc = 0
@@ -102,6 +129,8 @@ def train(t = 5, p='Math'):
       rdic[dev_set.Nl_Voc[x]] = x
     for epoch in range(15):
         index = 0
+        if use_cuda:
+            torch.cuda.empty_cache()
         for dBatch in tqdm(train_set.Get_Train(args.batch_size)):
             if index == 0:
                 accs = []
@@ -143,7 +172,7 @@ def train(t = 5, p='Math'):
                     bans = lst
                     maxl = score
                     print("find better score " + str(score) + "," + str(score2))
-                    #save_model(model)
+                    # save_model(model)
                     #torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
                 model = model.train()
             for i in range(len(dBatch)):
@@ -156,6 +185,7 @@ def train(t = 5, p='Math'):
 
             optimizer.step_and_update_lr()
             index += 1
+            cleanup()
     return brest, bans, batchn, each_epoch_pred
 
 

@@ -18,7 +18,8 @@ for i in tqdm(range(int(len(lst) / totalnum) + 1)):
         if totalnum * i + j >= len(lst):
             continue
         cardn =int(j / singlenum)
-        p = subprocess.Popen("CUDA_VISIBLE_DEVICES="+str(card[cardn]) + " python3 run.py %d %s %f %d %d"%(lst[totalnum * i + j], project, lr, seed, batch_size), shell=True)
+        # p = subprocess.Popen("CUDA_VISIBLE_DEVICES="+str(card[cardn]) + " python3 run.py %d %s %f %d %d"%(lst[totalnum * i + j], project, lr, seed, batch_size), shell=True)
+        p = subprocess.Popen("torchrun --nnodes=1 --nproc_per_node=1 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=virya4:29407 run.py %d %s %f %d %d"%(lst[totalnum * i + j], project, lr, seed, batch_size), shell=True)
         jobs.append(p)
         time.sleep(10)
     for p in jobs:
