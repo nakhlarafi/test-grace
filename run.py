@@ -108,7 +108,7 @@ def train(t = 5, p='Math'):
     model = NlEncoder(args)
     # create model and move it to GPU with id rank
     device_id = rank % torch.cuda.device_count()
-    print('-------------',device_id)
+    print('------device-------',device_id)
 
     if use_cuda:
         print('using GPU')
