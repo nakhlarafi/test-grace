@@ -4,7 +4,7 @@ import time
 import os, sys
 import pickle
 project = sys.argv[1]
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1,2,3"
 card = [0]
 lst = list(range(len(pickle.load(open(project + '.pkl', 'rb')))))
 singlenums = {'Time':5, 'Math':2, "Lang":10, "Chart":3, "Mockito":4, "Closure":1}
