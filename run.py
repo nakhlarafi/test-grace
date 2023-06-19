@@ -1,4 +1,5 @@
 import torch
+from torch import optim
 from Dataset import SumDataset
 import os
 from tqdm import tqdm
@@ -12,14 +13,6 @@ from nltk.translate.bleu_score import corpus_bleu
 import pandas as pd
 import random
 import sys
-
-import torch.distributed as dist
-import torch.nn as nn
-import torch.optim as optim
-
-from torch.nn.parallel import DistributedDataParallel as DDP
-
-
 #import wandb
 #wandb.init(project="codesum")
 class dotdict(dict):
@@ -92,18 +85,10 @@ def train(t = 5, p='Math'):
     args.Vocsize = len(train_set.Char_Voc)
 
     print(dev_set.ids)
-    dist.init_process_group("nccl")
-    rank = dist.get_rank()
-    print(f"Start running basic DDP example on rank {rank}.")
-    device_id = rank % torch.cuda.device_count()
+    model = NlEncoder(args)
     if use_cuda:
         print('using GPU')
-    model = NlEncoder(args).to(device_id)
-    # model = model().to(device_id)
-    
-    model = DDP(model, device_ids=[device_id])
-    # create model and move it to GPU with id rank
-    
+        model = model.cuda()
     maxl = 1e9
     optimizer = ScheduledOptim(optim.Adam(model.parameters(), lr=args.lr), args.embedding_size, 4000)
     maxAcc = 0
