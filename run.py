@@ -13,9 +13,14 @@ from nltk.translate.bleu_score import corpus_bleu
 import pandas as pd
 import random
 import sys
+
+import torch
 import torch.distributed as dist
+import torch.nn as nn
+import torch.optim as optim
+
 from torch.nn.parallel import DistributedDataParallel as DDP
-import torch.multiprocessing as mp
+
 
 #import wandb
 #wandb.init(project="codesum")
@@ -23,8 +28,8 @@ class dotdict(dict):
     def __getattr__(self, name):
         return self[name]
 
-NlLen_map = {"Time":3900, "Math":4500, "Lang":280, "Chart": 2350, "Mockito":2000, "unknown":2200, "Cli":1000}
-CodeLen_map = {"Time":1300, "Math":2700, "Lang":300, "Chart":5250, "Mockito":2000, "unknown":2800, "Cli":1000}
+NlLen_map = {"Time":3900, "Math":4500, "Lang":280, "Chart": 2350, "Mockito":1780, "unknown":2200}
+CodeLen_map = {"Time":1300, "Math":2700, "Lang":300, "Chart":5250, "Mockito":1176, "unknown":2800}
 args = dotdict({
     'NlLen':NlLen_map[sys.argv[2]],
     'CodeLen':CodeLen_map[sys.argv[2]],
@@ -39,71 +44,9 @@ args = dotdict({
     'poolsize':50,
     'Code_Vocsize':100,
     'seed':0,
-    'lr':1e-3,
-    'dev0':0,
-    'dev1':1
+    'lr':1e-3
 })
 os.environ['PYTHONHASHSEED'] = str(args.seed)
-
-
-def demo_checkpoint(rank, world_size):
-    print(f"Running DDP checkpoint example on rank {rank}.")
-    setup(rank, world_size)
-
-    model = ToyModel().to(rank)
-    ddp_model = DDP(model, device_ids=[rank])
-
-
-    CHECKPOINT_PATH = tempfile.gettempdir() + "/model.checkpoint"
-    if rank == 0:
-        # All processes should see same parameters as they all start from same
-        # random parameters and gradients are synchronized in backward passes.
-        # Therefore, saving it in one process is sufficient.
-        torch.save(ddp_model.state_dict(), CHECKPOINT_PATH)
-
-    # Use a barrier() to make sure that process 1 loads the model after process
-    # 0 saves it.
-    dist.barrier()
-    # configure map_location properly
-    map_location = {'cuda:%d' % 0: 'cuda:%d' % rank}
-    ddp_model.load_state_dict(
-        torch.load(CHECKPOINT_PATH, map_location=map_location))
-
-    loss_fn = nn.MSELoss()
-    optimizer = optim.SGD(ddp_model.parameters(), lr=0.001)
-
-    optimizer.zero_grad()
-    outputs = ddp_model(torch.randn(20, 10))
-    labels = torch.randn(20, 5).to(rank)
-
-    loss_fn(outputs, labels).backward()
-    optimizer.step()
-
-    # Not necessary to use a dist.barrier() to guard the file deletion below
-    # as the AllReduce ops in the backward pass of DDP already served as
-    # a synchronization.
-
-    if rank == 0:
-        os.remove(CHECKPOINT_PATH)
-
-    cleanup()
-
-def run_demo(demo_fn, world_size):
-    mp.spawn(demo_fn,
-             args=(world_size,),
-             nprocs=world_size,
-             join=True)
-
-def setup(rank, world_size):
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '12355'
-
-    # initialize the process group
-    dist.init_process_group("gloo", rank=rank, world_size=world_size)
-
-def cleanup():
-    dist.destroy_process_group()
-
 
 def save_model(model, dirs = "checkpointcodeSearch"):
     if not os.path.exists(dirs):
@@ -130,7 +73,7 @@ def gVar(data):
         tensor = tensor.cuda()
     return tensor
 
-def train(t = 5, p='Math', worldsize=2, rank=0):
+def train(t = 5, p='Math'):
 
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)  
@@ -149,22 +92,27 @@ def train(t = 5, p='Math', worldsize=2, rank=0):
     args.Code_Vocsize = len(train_set.Code_Voc)
     args.Nl_Vocsize = len(train_set.Nl_Voc)
     args.Vocsize = len(train_set.Char_Voc)
+
     print(dev_set.ids)
-
-    
-    
-    print(f"Start running basic DDP example on rank {rank}.")
-    args.dev0 = rank * 2
-    args.dev1 = rank * 2 + 1
     model = NlEncoder(args)
-    # create model and move it to GPU with id rank
-
+    
+    
+    
+    
     if use_cuda:
         print('using GPU')
-        # model = model.to(device_id)
+        model = model.cuda()
+        
+    
+    dist.init_process_group("nccl")
+    rank = dist.get_rank()
+    print(f"Start running basic DDP example on rank {rank}.")
 
-    # wrap the model with DDP
-    model = DDP(model)
+    # create model and move it to GPU with id rank
+    device_id = rank % torch.cuda.device_count()
+    model = model().to(device_id)
+    model = DDP(model, device_ids=[device_id])
+    
     maxl = 1e9
     optimizer = ScheduledOptim(optim.Adam(model.parameters(), lr=args.lr), args.embedding_size, 4000)
     maxAcc = 0
@@ -178,8 +126,6 @@ def train(t = 5, p='Math', worldsize=2, rank=0):
       rdic[dev_set.Nl_Voc[x]] = x
     for epoch in range(15):
         index = 0
-        if use_cuda:
-            torch.cuda.empty_cache()
         for dBatch in tqdm(train_set.Get_Train(args.batch_size)):
             if index == 0:
                 accs = []
@@ -221,7 +167,7 @@ def train(t = 5, p='Math', worldsize=2, rank=0):
                     bans = lst
                     maxl = score
                     print("find better score " + str(score) + "," + str(score2))
-                    # save_model(model)
+                    #save_model(model)
                     #torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
                 model = model.train()
             for i in range(len(dBatch)):
@@ -234,7 +180,6 @@ def train(t = 5, p='Math', worldsize=2, rank=0):
 
             optimizer.step_and_update_lr()
             index += 1
-            cleanup()
     return brest, bans, batchn, each_epoch_pred
 
 
@@ -246,15 +191,6 @@ if __name__ == "__main__":
     np.set_printoptions(threshold=sys.maxsize)
     res = {}    
     p = sys.argv[2]
-    n_gpus = torch.cuda.device_count()
-    assert n_gpus >= 2, f"Requires at least 2 GPUs to run, but got {n_gpus}"
-    world_size = n_gpus
-    res[int(sys.argv[1])] = train(int(sys.argv[1]), p, world_size)
-    run_demo(demo_checkpoint, world_size)
-    world_size = n_gpus//2
-    # run_demo(demo_model_parallel, world_size)
-    
-
     res[int(sys.argv[1])] = train(int(sys.argv[1]), p)
     open('%sres%d_%d_%s_%s.pkl'%(p, int(sys.argv[1]), args.seed, args.lr, args.batch_size), 'wb').write(pickle.dumps(res))
 
