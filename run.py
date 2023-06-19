@@ -112,7 +112,7 @@ def train(t = 5, p='Math'):
 
     if use_cuda:
         print('using GPU')
-        model = model.cuda(device_id)
+        model = model.to(device_id)
 
     # wrap the model with DDP
     model = DDP(model, device_ids=[device_id])
