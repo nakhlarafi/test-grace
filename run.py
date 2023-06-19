@@ -1,5 +1,4 @@
 import torch
-from torch import optim
 from Dataset import SumDataset
 import os
 from tqdm import tqdm
@@ -14,7 +13,6 @@ import pandas as pd
 import random
 import sys
 
-import torch
 import torch.distributed as dist
 import torch.nn as nn
 import torch.optim as optim
