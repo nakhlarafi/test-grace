@@ -19,7 +19,7 @@ for i in tqdm(range(int(len(lst) / totalnum) + 1)):
             continue
         cardn =int(j / singlenum)
         # p = subprocess.Popen("CUDA_VISIBLE_DEVICES="+str(card[cardn]) + " python3 run.py %d %s %f %d %d"%(lst[totalnum * i + j], project, lr, seed, batch_size), shell=True)
-        p = subprocess.Popen("CUDA_VISIBLE_DEVICES=0,1,2 python3 run.py %d %s %f %d %d"%(lst[totalnum * i + j], project, lr, seed, batch_size), shell=True)
+        p = subprocess.Popen("CUDA_VISIBLE_DEVICES="+str(card[cardn]) +" python3 run.py %d %s %f %d %d"%(lst[totalnum * i + j], project, lr, seed, batch_size), shell=True)
         jobs.append(p)
         time.sleep(10)
     for p in jobs:
