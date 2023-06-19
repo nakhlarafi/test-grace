@@ -22,7 +22,7 @@ class NlEncoder(nn.Module):
         self.conv = nn.Conv2d(self.embedding_size, self.embedding_size, (1, self.word_len))
         self.transformerBlocks = nn.ModuleList(
             [TransformerBlock(self.embedding_size, 8, self.feed_forward_hidden, 0.1) for _ in range(5)])
-        self.token_embedding = nn.Embedding(args.Nl_Vocsize, self.embedding_size-1).to(args.dev0)
+        self.token_embedding = nn.Embedding(args.Nl_Vocsize, self.embedding_size-1)
         self.token_embedding1 = nn.Embedding(args.Nl_Vocsize, self.embedding_size)
 
         self.text_embedding = nn.Embedding(20, self.embedding_size)
@@ -34,7 +34,7 @@ class NlEncoder(nn.Module):
         self.norm = LayerNorm(self.embedding_size)
         self.lstm = nn.LSTM(self.embedding_size // 2, int(self.embedding_size / 4), batch_first=True, bidirectional=True)
         self.conv = nn.Conv2d(self.embedding_size, self.embedding_size, (1, 10))
-        self.resLinear2 = nn.Linear(self.embedding_size, 1).to(args.dev1)
+        self.resLinear2 = nn.Linear(self.embedding_size, 1)
     def forward(self, input_node, inputtype, inputad, res, inputtext, linenode, linetype, linemus):
         nlmask = torch.gt(input_node, 0)
         resmask = torch.eq(input_node, 2)#torch.gt(res, 0)
