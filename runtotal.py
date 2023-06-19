@@ -20,6 +20,7 @@ for i in tqdm(range(int(len(lst) / totalnum) + 1)):
             continue
         cardn =int(j / singlenum)
         # p = subprocess.Popen("CUDA_VISIBLE_DEVICES="+str(card[cardn]) + " python3 run.py %d %s %f %d %d"%(lst[totalnum * i + j], project, lr, seed, batch_size), shell=True)
+        p = subprocess.Popen("export MASTER_ADDR=$(scontrol show hostname ${SLURM_NODELIST} | head -n 1)")
         p = subprocess.Popen("CUDA_VISIBLE_DEVICES=0,1 torchrun --nnodes=1 --nproc_per_node=2 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=spear01:29405 run.py %d %s %f %d %d"%(lst[totalnum * i + j], project, lr, seed, batch_size), shell=True)
         jobs.append(p)
         time.sleep(10)
