@@ -3,7 +3,6 @@ from tqdm import tqdm
 import time
 import os, sys
 import pickle
-import torch
 project = sys.argv[1]
 card = [0,1,2]
 lst = list(range(len(pickle.load(open(project + '.pkl', 'rb')))))
