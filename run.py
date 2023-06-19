@@ -98,17 +98,10 @@ def train(t = 5, p='Math'):
     device_id = rank % torch.cuda.device_count()
     if use_cuda:
         print('using GPU')
-    model = NlEncoder(args)
-    model = model().to(device_id)
+    model = NlEncoder(args).to(device_id)
+    # model = model().to(device_id)
     
     model = DDP(model, device_ids=[device_id])
-    
-    
-    
-    
-        
-    
-
     # create model and move it to GPU with id rank
     
     maxl = 1e9
