@@ -94,24 +94,24 @@ def train(t = 5, p='Math'):
     args.Vocsize = len(train_set.Char_Voc)
 
     print(dev_set.ids)
-    model = NlEncoder(args)
-    
-    
-    
-    
-    if use_cuda:
-        print('using GPU')
-        model = model.cuda()
-        
-    
     dist.init_process_group("nccl")
     rank = dist.get_rank()
     print(f"Start running basic DDP example on rank {rank}.")
+    device_id = rank % torch.cuda.device_count()
+    if use_cuda:
+        print('using GPU')
+    model = NlEncoder(args)
+    model = model().to(device_id)
+    
+    model = DDP(model, device_ids=[device_id])
+    
+    
+    
+    
+        
+    
 
     # create model and move it to GPU with id rank
-    device_id = rank % torch.cuda.device_count()
-    model = model().to(device_id)
-    model = DDP(model, device_ids=[device_id])
     
     maxl = 1e9
     optimizer = ScheduledOptim(optim.Adam(model.parameters(), lr=args.lr), args.embedding_size, 4000)
