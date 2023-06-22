@@ -50,7 +50,7 @@ seed = 0
 batch_size = 60
 
 for i in tqdm(range(len(lst))):
-    p = subprocess.Popen("CUDA_VISIBLE_DEVICES=0,1,2" + " torchrun --nnodes=1 --nproc_per_node=3 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=virya:29400  run.py %d %s %f %d %d"%(lst[i], project, lr, seed, batch_size), shell=True)
+    p = subprocess.Popen("CUDA_VISIBLE_DEVICES=0,1,2" + " python3 run.py %d %s %f %d %d"%(lst[i], project, lr, seed, batch_size), shell=True)
     p.wait()
 
 p = subprocess.Popen("python3 sum.py %s %d %f %d"%(project, seed, lr, batch_size), shell=True)
