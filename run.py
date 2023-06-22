@@ -86,10 +86,9 @@ def train(t = 5, p='Math'):
 
     print(dev_set.ids)
     model = NlEncoder(args)
-    if torch.cuda.device_count() > 1:
-        print("Let's use", torch.cuda.device_count(), "GPUs!")
+    if use_cuda:
+        print('using GPU')
         model = model.cuda()
-        model = torch.nn.DataParallel(model)
     maxl = 1e9
     optimizer = ScheduledOptim(optim.Adam(model.parameters(), lr=args.lr), args.embedding_size, 4000)
     maxAcc = 0
