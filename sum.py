@@ -18,6 +18,6 @@ for i in range(0, versionNum[proj]):
         t[x] = p[x]
 
 
-    
+print(t)
 open(proj + 'res_%d_%s_%s.pkl'%(seed,lr, batch_size), 'wb').write(pickle.dumps(t))
 print(len(t))
